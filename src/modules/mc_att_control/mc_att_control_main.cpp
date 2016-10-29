@@ -679,18 +679,18 @@ MulticopterAttitudeControl::control_attitude(float dt)
 	/* all input data is ready, run controller itself */
 
 	/* try to move thrust vector shortest way, because yaw response is slower than roll/pitch */
-	math::Vector<3> R_z(R(0, 2), R(1, 2), R(2, 2));
-	math::Vector<3> R_sp_z(R_sp(0, 2), R_sp(1, 2), R_sp(2, 2));
+	math::Vector<3> R_z(R(0, 2), R(1, 2), R(2, 2));					/* R_z = R * [0, 0, 1], current z axis */
+	math::Vector<3> R_sp_z(R_sp(0, 2), R_sp(1, 2), R_sp(2, 2));		/* R_sp_z = R_sp * [0, 0, 1], current sp z axis */
 
 	/* axis and sin(angle) of desired rotation */
-	math::Vector<3> e_R = R.transposed() * (R_z % R_sp_z);
+	math::Vector<3> e_R = R.transposed() * (R_z % R_sp_z);			/* roll and pitch control error, convert to ned */
 
 	/* calculate angle error */
-	float e_R_z_sin = e_R.length();
+	float e_R_z_sin = e_R.length();				/* |R_z| =1, |R_sp_z| =1 */
 	float e_R_z_cos = R_z * R_sp_z;
 
 	/* calculate weight for yaw control */
-	float yaw_w = R_sp(2, 2) * R_sp(2, 2);
+	float yaw_w = R_sp(2, 2) * R_sp(2, 2);		/* cos(roll) * cos(pitch) */
 
 	/* calculate rotation matrix after roll/pitch only rotation */
 	math::Matrix<3, 3> R_rp;
@@ -892,7 +892,7 @@ MulticopterAttitudeControl::task_main()
 			/* Check if we are in rattitude mode and the pilot is above the threshold on pitch
 			 * or roll (yaw can rotate 360 in normal att control).  If both are true don't
 			 * even bother running the attitude controllers */
-			if (_v_control_mode.flag_control_rattitude_enabled) {
+			if (_v_control_mode.flag_control_rattitude_enabled) {					/* rattitude: rate / attitude */
 				if (fabsf(_manual_control_sp.y) > _params.rattitude_thres ||
 				    fabsf(_manual_control_sp.x) > _params.rattitude_thres) {
 					_v_control_mode.flag_control_attitude_enabled = false;
