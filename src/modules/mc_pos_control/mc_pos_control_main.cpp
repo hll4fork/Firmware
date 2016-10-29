@@ -735,15 +735,15 @@ MulticopterPositionControl::update_ref()
 
 		if (_ref_timestamp != 0) {
 			/* calculate current position setpoint in global frame */
-			map_projection_reproject(&_ref_pos, _pos_sp(0), _pos_sp(1), &lat_sp, &lon_sp);
+			map_projection_reproject(&_ref_pos, _pos_sp(0), _pos_sp(1), &lat_sp, &lon_sp);	/* local x, y -> lat, lon, for later recalculate pos_sp */
 			alt_sp = _ref_alt - _pos_sp(2);
 		}
 
 		/* update local projection reference */
-		map_projection_init(&_ref_pos, _local_pos.ref_lat, _local_pos.ref_lon);
+		map_projection_init(&_ref_pos, _local_pos.ref_lat, _local_pos.ref_lon);				/* update lat and lon refernece */
 		_ref_alt = _local_pos.ref_alt;
 
-		if (_ref_timestamp != 0) {
+		if (_ref_timestamp != 0) {															/* recalculate pos_sp in new reference */
 			/* reproject position setpoint to new reference */
 			map_projection_project(&_ref_pos, lat_sp, lon_sp, &_pos_sp.data[0], &_pos_sp.data[1]);
 			_pos_sp(2) = -(alt_sp - _ref_alt);
@@ -1276,7 +1276,7 @@ MulticopterPositionControl::task_main()
 
 		/* timed out - periodic check for _task_should_exit */
 		if (pret == 0) {
-			// Go through the loop anyway to copy manual input at 50 Hz.
+			// Go through the loop anyway to copy manual input at 50 Hz. 50Hz = 1000 / 20
 		}
 
 		/* this is undesirable but not much we can do */
